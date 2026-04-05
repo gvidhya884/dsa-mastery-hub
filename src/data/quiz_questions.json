@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "question": "What is the time complexity of Binary Search?",
+    "options": ["O(n)", "O(log n)", "O(n²)", "O(1)"],
+    "correct": 1,
+    "concept_id": 1,
+    "explanation": "Binary Search divides the search space in half each time, resulting in O(log n) complexity."
+  },
+  {
+    "id": 2,
+    "question": "Which data structure uses LIFO (Last In First Out) principle?",
+    "options": ["Queue", "Stack", "Array", "Linked List"],
+    "correct": 1,
+    "concept_id": null,
+    "explanation": "Stack follows LIFO - the last element added is the first one removed."
+  },
+  {
+    "id": 3,
+    "question": "What is the worst-case time complexity of Quick Sort?",
+    "options": ["O(n log n)", "O(n)", "O(n²)", "O(log n)"],
+    "correct": 2,
+    "concept_id": null,
+    "explanation": "Quick Sort's worst-case is O(n²) when the pivot is always the smallest or largest element."
+  },
+  {
+    "id": 4,
+    "question": "Which of the following is a self-balancing BST?",
+    "options": ["Binary Tree", "AVL Tree", "Heap", "Graph"],
+    "correct": 1,
+    "concept_id": null,
+    "explanation": "AVL Tree is a self-balancing Binary Search Tree that maintains height balance."
+  },
+  {
+    "id": 5,
+    "question": "What does DFS stand for?",
+    "options": ["Data Flow Search", "Depth First Search", "Double First Search", "Direct First Search"],
+    "correct": 1,
+    "concept_id": null,
+    "explanation": "DFS stands for Depth First Search, a graph traversal algorithm."
+  }
+]
