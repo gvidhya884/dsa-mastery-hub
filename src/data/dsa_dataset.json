@@ -858,5 +858,367 @@
     "applications": ["Computing permutations and combinations", "Probability calculations in statistics", "Taylor series and mathematical analysis"],
     "key_points": ["Recursive version has O(n) call stack depth", "Iterative version uses O(1) space", "Overflows quickly — use long long or big integers for large n"],
     "visual_description": "Show two side-by-side diagrams. Left: a recursive call stack for factorial(5) showing factorial(5)→factorial(4)→...→factorial(1) stacked vertically, then unwinding with return values multiplied. Right: an iterative loop diagram showing a result variable being multiplied by 2, 3, 4, 5 in sequence inside a loop box, with the final answer highlighted in gold."
+  },
+  {
+  "id": 51,
+  "name": "Travelling Salesman Problem (TSP)",
+  "category": "Graph Algorithms",
+  "difficulty": "Hard",
+  "definition": "The Travelling Salesman Problem (TSP) is an optimization problem where a salesman must visit all cities exactly once and return to the starting city with the minimum total travel cost. It is a classic NP-Hard problem. Solutions include brute force, dynamic programming (Held-Karp), and approximation techniques.",
+  "time_complexity": {
+    "best": "O(n^2 * 2^n)",
+    "average": "O(n^2 * 2^n)",
+    "worst": "O(n!)"
+  },
+  "space_complexity": "O(n * 2^n)",
+  "code_example": "#include <stdio.h>\n#include <limits.h>\n\n#define N 4\n\nint min(int a, int b) {\n    return (a < b) ? a : b;\n}\n\nint tsp(int graph[N][N], int visited[], int currPos, int n, int count, int cost) {\n    if (count == n && graph[currPos][0]) {\n        return cost + graph[currPos][0];\n    }\n\n    int ans = INT_MAX;\n\n    for (int i = 0; i < n; i++) {\n        if (visited[i] == 0 && graph[currPos][i]) {\n            visited[i] = 1;\n\n            ans = min(ans, tsp(graph, visited, i, n, count + 1,\n                              cost + graph[currPos][i]));\n\n            visited[i] = 0;\n        }\n    }\n\n    return ans;\n}\n\nint main() {\n    int graph[N][N] = {\n        {0, 10, 15, 20},\n        {10, 0, 35, 25},\n        {15, 35, 0, 30},\n        {20, 25, 30, 0}\n    };\n\n    int visited[N] = {0};\n    visited[0] = 1;\n\n    int result = tsp(graph, visited, 0, N, 1, 0);\n    printf(\"Minimum travelling cost: %d\\n\", result);\n\n    return 0;\n}",
+  "applications": [
+    "Route optimization in logistics and delivery systems",
+    "Circuit board drilling optimization",
+    "DNA sequencing and genome analysis",
+    "Travel planning and navigation systems"
+  ],
+  "key_points": [
+    "NP-Hard problem with no known polynomial-time solution",
+    "Must visit each city exactly once and return to start",
+    "Brute force checks all permutations",
+    "Dynamic programming (Held-Karp) reduces complexity",
+    "Widely used in optimization and real-world routing problems"
+  ],
+  "visual_description": "Show a set of cities as nodes connected by weighted edges. Highlight one possible path that visits all cities exactly once and returns to the starting city. Then compare multiple possible routes with different costs. Finally, highlight the shortest route in green as the optimal solution while others are shown in gray."
+},
+{
+    "id": 52,
+    "name": "B-Tree",
+    "category": "Tree Data Structures",
+    "difficulty": "Hard",
+    "definition": "A B-Tree is a self-balancing search tree where each node can have multiple keys and children. It maintains sorted data and allows searches, insertions, and deletions in O(log n) time. B-Trees are optimized for systems that read and write large blocks of data, such as databases and file systems.",
+    "time_complexity": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)"
+    },
+    "space_complexity": "O(n)",
+    "code_example": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 3\n#define MIN 2\nstruct BTreeNode {\n    int val[MAX + 1], count;\n    struct BTreeNode *child[MAX + 2];\n};\ntypedef struct BTreeNode Node;\nNode* createNode(int val, Node* child) {\n    Node* newNode = (Node*)malloc(sizeof(Node));\n    newNode->val[1] = val;\n    newNode->count = 1;\n    newNode->child[0] = NULL;\n    newNode->child[1] = child;\n    return newNode;\n}\nvoid addValToNode(int val, int pos, Node* node, Node* child) {\n    int j = node->count;\n    while (j > pos) {\n        node->val[j + 1] = node->val[j];\n        node->child[j + 1] = node->child[j];\n        j--;\n    }\n    node->val[j + 1] = val;\n    node->child[j + 1] = child;\n    node->count++;\n}\nvoid splitNode(int val, int* pval, int pos, Node* node, Node* child, Node** newNode) {\n    int median, j;\n    if (pos > MIN) median = MIN + 1;\n    else median = MIN;\n    *newNode = (Node*)malloc(sizeof(Node));\n    j = median + 1;\n    while (j <= MAX) {\n        (*newNode)->val[j - median] = node->val[j];\n        (*newNode)->child[j - median] = node->child[j];\n        j++;\n    }\n    node->count = median;\n    (*newNode)->count = MAX - median;\n    if (pos <= MIN) addValToNode(val, pos, node, child);\n    else addValToNode(val, pos - median, *newNode, child);\n    *pval = node->val[node->count];\n    (*newNode)->child[0] = node->child[node->count];\n    node->count--;\n}\nint setVal(int val, Node* node, int* pval, Node** child) {\n    int pos;\n    if (!node) { *pval = val; *child = NULL; return 1; }\n    if (val < node->val[1]) pos = 0;\n    else {\n        for (pos = node->count; (val < node->val[pos] && pos > 1); pos--);\n        if (val == node->val[pos]) { printf(\"Duplicates not allowed\\n\"); return 0; }\n    }\n    if (setVal(val, node->child[pos], pval, child)) {\n        if (node->count < MAX) { addValToNode(*pval, pos, node, *child); return 0; }\n        else { splitNode(*pval, pval, pos, node, *child, child); return 1; }\n    }\n    return 0;\n}\nvoid insert(int val, Node** node) {\n    int i; Node* child;\n    if (setVal(val, *node, &i, &child)) {\n        Node* newNode = createNode(i, child);\n        newNode->child[0] = *node;\n        *node = newNode;\n    }\n}\nvoid inorder(Node* node) {\n    if (node) {\n        int i;\n        for (i = 0; i < node->count; i++) {\n            inorder(node->child[i]);\n            printf(\"%d \", node->val[i + 1]);\n        }\n        inorder(node->child[i]);\n    }\n}\nint main() {\n    Node* root = NULL;\n    insert(10, &root); insert(20, &root); insert(5, &root);\n    insert(6, &root); insert(12, &root); insert(30, &root);\n    insert(7, &root); insert(17, &root);\n    printf(\"Inorder traversal: \");\n    inorder(root);\n    printf(\"\\n\");\n    return 0;\n}",
+    "applications": ["Database indexing", "File systems", "Multilevel indexing"],
+    "key_points": ["Each node holds multiple keys", "All leaves are at the same level", "Minimizes disk I/O operations"],
+    "visual_description": "Show a tree with nodes containing multiple keys. Highlight how keys are split when a node overflows during insertion, and how the tree remains balanced."
+  },
+  {
+    "id": 53,
+    "name": "Horner's Rule",
+    "category": "Mathematical Algorithms",
+    "difficulty": "Easy",
+    "definition": "Horner's Rule is an algorithm for evaluating polynomials efficiently. Instead of computing each power of x separately, it restructures the polynomial into nested multiplications, reducing the number of multiplications from O(n²) to O(n).",
+    "time_complexity": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)"
+    },
+    "space_complexity": "O(1)",
+    "code_example": "#include <stdio.h>\ndouble horner(double coeff[], int n, double x) {\n    double result = coeff[n];\n    for (int i = n - 1; i >= 0; i--) {\n        result = result * x + coeff[i];\n    }\n    return result;\n}\nint main() {\n    double coeff[] = {1, 2, 3, 4};\n    int n = 3;\n    double x = 2.0;\n    printf(\"Result: %.2f\\n\", horner(coeff, n, x));\n    return 0;\n}",
+    "applications": ["Polynomial evaluation", "Numerical methods", "Compiler expression evaluation"],
+    "key_points": ["Reduces multiplications to O(n)", "Processes coefficients from highest to lowest degree", "Numerically stable method"],
+    "visual_description": "Show the polynomial 4x³+3x²+2x+1 being evaluated at x=2 step by step using nested multiplication, highlighting each step of the loop with running result."
+  },
+  {
+    "id": 54,
+    "name": "Binary Exponentiation",
+    "category": "Mathematical Algorithms",
+    "difficulty": "Easy",
+    "definition": "Binary Exponentiation (also called fast power or exponentiation by squaring) computes xⁿ in O(log n) time by repeatedly squaring x and multiplying only when the corresponding bit of n is set.",
+    "time_complexity": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(log n)"
+    },
+    "space_complexity": "O(1)",
+    "code_example": "#include <stdio.h>\nlong long binPow(long long base, long long exp) {\n    long long result = 1;\n    while (exp > 0) {\n        if (exp % 2 == 1)\n            result *= base;\n        base *= base;\n        exp /= 2;\n    }\n    return result;\n}\nint main() {\n    printf(\"2^10 = %lld\\n\", binPow(2, 10));\n    printf(\"3^5 = %lld\\n\", binPow(3, 5));\n    return 0;\n}",
+    "applications": ["Modular exponentiation in cryptography", "Matrix exponentiation", "Computing large powers efficiently"],
+    "key_points": ["Uses binary representation of exponent", "Squares base at every step", "Only multiplies result when bit is 1"],
+    "visual_description": "Show the binary representation of the exponent. At each bit, illustrate squaring of base and conditional multiplication into result, highlighting active bits."
+  },
+  {
+    "id": 55,
+    "name": "Computing LCM",
+    "category": "Mathematical Algorithms",
+    "difficulty": "Easy",
+    "definition": "The Least Common Multiple (LCM) of two numbers is the smallest number divisible by both. It is efficiently computed using the relationship LCM(a,b) = (a*b) / GCD(a,b), where GCD is found using the Euclidean algorithm.",
+    "time_complexity": {
+      "best": "O(log(min(a,b)))",
+      "average": "O(log(min(a,b)))",
+      "worst": "O(log(min(a,b)))"
+    },
+    "space_complexity": "O(1)",
+    "code_example": "#include <stdio.h>\nint gcd(int a, int b) {\n    while (b != 0) {\n        int t = b;\n        b = a % b;\n        a = t;\n    }\n    return a;\n}\nint lcm(int a, int b) {\n    return (a / gcd(a, b)) * b;\n}\nint main() {\n    int a = 12, b = 18;\n    printf(\"LCM(%d, %d) = %d\\n\", a, b, lcm(a, b));\n    return 0;\n}",
+    "applications": ["Fraction arithmetic", "Scheduling problems", "Synchronization in computing"],
+    "key_points": ["LCM * GCD = a * b", "Divide before multiply to prevent overflow", "Depends on Euclidean GCD"],
+    "visual_description": "Show two numbers with their prime factorizations. Highlight shared and unique prime factors, then show how LCM takes the maximum power of each prime factor."
+  },
+  {
+    "id": 56,
+    "name": "Topological Sorting",
+    "category": "Graph Algorithms",
+    "difficulty": "Medium",
+    "definition": "Topological Sorting orders vertices of a Directed Acyclic Graph (DAG) such that for every directed edge u→v, vertex u appears before v. It is implemented using DFS and a stack, pushing each fully explored vertex onto the stack.",
+    "time_complexity": {
+      "best": "O(V + E)",
+      "average": "O(V + E)",
+      "worst": "O(V + E)"
+    },
+    "space_complexity": "O(V)",
+    "code_example": "#include <stdio.h>\n#include <stdlib.h>\n#define V 6\nint adj[V][V], visited[V], stack[V], top = -1;\nvoid dfs(int v) {\n    visited[v] = 1;\n    for (int i = 0; i < V; i++)\n        if (adj[v][i] && !visited[i])\n            dfs(i);\n    stack[++top] = v;\n}\nvoid topologicalSort() {\n    for (int i = 0; i < V; i++)\n        if (!visited[i])\n            dfs(i);\n    printf(\"Topological Order: \");\n    while (top >= 0)\n        printf(\"%d \", stack[top--]);\n    printf(\"\\n\");\n}\nint main() {\n    adj[5][2] = adj[5][0] = 1;\n    adj[4][0] = adj[4][1] = 1;\n    adj[2][3] = adj[3][1] = 1;\n    topologicalSort();\n    return 0;\n}",
+    "applications": ["Task scheduling", "Build systems (Makefile dependencies)", "Course prerequisite ordering"],
+    "key_points": ["Only works on DAGs (no cycles)", "DFS-based with stack to record finish times", "Multiple valid orderings may exist"],
+    "visual_description": "Show a DAG with directed edges. Animate DFS, pushing nodes onto a stack when fully explored. Then pop the stack to reveal the topological order, showing edges always point forward."
+  },
+  {
+    "id": 57,
+    "name": "Russian Peasant Multiplication",
+    "category": "Mathematical Algorithms",
+    "difficulty": "Easy",
+    "definition": "Russian Peasant Multiplication multiplies two numbers using repeated halving and doubling. One number is halved (integer division) and the other is doubled at each step. The second number is added to the result whenever the first number is odd. This is equivalent to binary multiplication.",
+    "time_complexity": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)"
+    },
+    "space_complexity": "O(1)",
+    "code_example": "#include <stdio.h>\nint russianPeasant(int a, int b) {\n    int result = 0;\n    while (a > 0) {\n        if (a % 2 != 0)\n            result += b;\n        a /= 2;\n        b *= 2;\n    }\n    return result;\n}\nint main() {\n    int a = 18, b = 15;\n    printf(\"%d x %d = %d\\n\", a, b, russianPeasant(a, b));\n    return 0;\n}",
+    "applications": ["Binary multiplication in hardware", "Historical multiplication method", "Understanding bitwise operations"],
+    "key_points": ["Add the doubled value when halved number is odd", "Equivalent to binary multiplication", "Works on all positive integers"],
+    "visual_description": "Show a table with two columns: halving column and doubling column. Highlight rows where the halving column is odd, then sum those rows in the doubling column to get the product."
+  },
+  {
+    "id": 58,
+    "name": "Fake Coin Problem",
+    "category": "Divide and Conquer",
+    "difficulty": "Easy",
+    "definition": "The Fake Coin Problem finds a lighter counterfeit coin among n coins using a balance scale with the minimum number of weighings. The divide and conquer approach splits coins into three groups and eliminates two-thirds of candidates per weighing, achieving O(log₃ n) weighings.",
+    "time_complexity": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(log n)"
+    },
+    "space_complexity": "O(1)",
+    "code_example": "#include <stdio.h>\nint findFakeCoin(int coins[], int low, int high) {\n    if (low == high) return low;\n    int size = high - low + 1;\n    int third = size / 3;\n    int leftSum = 0, rightSum = 0;\n    for (int i = low; i < low + third; i++) leftSum += coins[i];\n    for (int i = low + third; i < low + 2 * third; i++) rightSum += coins[i];\n    if (leftSum < rightSum)\n        return findFakeCoin(coins, low, low + third - 1);\n    else if (rightSum < leftSum)\n        return findFakeCoin(coins, low + third, low + 2 * third - 1);\n    else\n        return findFakeCoin(coins, low + 2 * third, high);\n}\nint main() {\n    int coins[] = {1, 1, 1, 1, 0, 1, 1, 1, 1};\n    int n = 9;\n    int fakeIndex = findFakeCoin(coins, 0, n - 1);\n    printf(\"Fake coin at index: %d\\n\", fakeIndex);\n    return 0;\n}",
+    "applications": ["Quality control in manufacturing", "Defect detection", "Teaching divide and conquer strategy"],
+    "key_points": ["Divide coins into three equal groups", "Compare two groups on scale", "Recurse into the lighter group"],
+    "visual_description": "Show 9 coins split into 3 groups of 3. Animate a balance scale tipping toward the heavier side, eliminating that group. Recurse on the lighter group until the single fake coin is identified."
+  },
+  {
+    "id": 59,
+    "name": "Interpolation Search",
+    "category": "Searching Algorithms",
+    "difficulty": "Medium",
+    "definition": "Interpolation Search improves on binary search for uniformly distributed sorted arrays. Instead of always checking the midpoint, it estimates the position of the target using a linear interpolation formula, making it faster in practice with O(log log n) average case.",
+    "time_complexity": {
+      "best": "O(1)",
+      "average": "O(log log n)",
+      "worst": "O(n)"
+    },
+    "space_complexity": "O(1)",
+    "code_example": "#include <stdio.h>\nint interpolationSearch(int arr[], int n, int x) {\n    int low = 0, high = n - 1;\n    while (low <= high && x >= arr[low] && x <= arr[high]) {\n        if (low == high) {\n            if (arr[low] == x) return low;\n            return -1;\n        }\n        int pos = low + ((double)(high - low) / (arr[high] - arr[low])) * (x - arr[low]);\n        if (arr[pos] == x) return pos;\n        if (arr[pos] < x) low = pos + 1;\n        else high = pos - 1;\n    }\n    return -1;\n}\nint main() {\n    int arr[] = {10, 20, 30, 40, 50, 60, 70, 80};\n    int n = 8, x = 50;\n    int result = interpolationSearch(arr, n, x);\n    if (result != -1) printf(\"Found at index %d\\n\", result);\n    else printf(\"Not found\\n\");\n    return 0;\n}",
+    "applications": ["Searching in uniformly distributed datasets", "Phone directory lookup", "Dictionary word search"],
+    "key_points": ["Probe position is estimated by interpolation formula", "Best for uniformly distributed sorted data", "Degrades to O(n) for non-uniform distributions"],
+    "visual_description": "Show a sorted array with uniform values. Highlight how the probe position is calculated using the interpolation formula, jumping closer to the target compared to binary search's midpoint."
+  },
+  {
+    "id": 60,
+    "name": "Huffman Coding",
+    "category": "Greedy Algorithms",
+    "difficulty": "Medium",
+    "definition": "Huffman Coding is a lossless data compression algorithm that assigns shorter binary codes to more frequent characters and longer codes to less frequent ones. It builds a binary tree (Huffman tree) greedily using a priority queue, minimizing total encoded length.",
+    "time_complexity": {
+      "best": "O(n log n)",
+      "average": "O(n log n)",
+      "worst": "O(n log n)"
+    },
+    "space_complexity": "O(n)",
+    "code_example": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 100\ntypedef struct Node {\n    char ch;\n    int freq;\n    struct Node *left, *right;\n} Node;\nNode* newNode(char ch, int freq) {\n    Node* node = (Node*)malloc(sizeof(Node));\n    node->ch = ch; node->freq = freq;\n    node->left = node->right = NULL;\n    return node;\n}\nvoid swap(Node** a, Node** b) { Node* t = *a; *a = *b; *b = t; }\nvoid minHeapify(Node* arr[], int n, int i) {\n    int smallest = i, l = 2*i+1, r = 2*i+2;\n    if (l < n && arr[l]->freq < arr[smallest]->freq) smallest = l;\n    if (r < n && arr[r]->freq < arr[smallest]->freq) smallest = r;\n    if (smallest != i) { swap(&arr[i], &arr[smallest]); minHeapify(arr, n, smallest); }\n}\nvoid printCodes(Node* root, int arr[], int top) {\n    if (root->left) { arr[top] = 0; printCodes(root->left, arr, top + 1); }\n    if (root->right) { arr[top] = 1; printCodes(root->right, arr, top + 1); }\n    if (!root->left && !root->right) {\n        printf(\"%c: \", root->ch);\n        for (int i = 0; i < top; i++) printf(\"%d\", arr[i]);\n        printf(\"\\n\");\n    }\n}\nvoid huffman(char chars[], int freq[], int n) {\n    Node* arr[MAX];\n    for (int i = 0; i < n; i++) arr[i] = newNode(chars[i], freq[i]);\n    for (int i = n/2 - 1; i >= 0; i--) minHeapify(arr, n, i);\n    while (n > 1) {\n        Node* l = arr[0]; arr[0] = arr[--n]; minHeapify(arr, n, 0);\n        Node* r = arr[0];\n        Node* top = newNode('$', l->freq + r->freq);\n        top->left = l; top->right = r;\n        arr[0] = top; minHeapify(arr, n, 0);\n    }\n    int codes[MAX], top = 0;\n    printCodes(arr[0], codes, top);\n}\nint main() {\n    char chars[] = {'a', 'b', 'c', 'd', 'e', 'f'};\n    int freq[] = {5, 9, 12, 13, 16, 45};\n    int n = 6;\n    huffman(chars, freq, n);\n    return 0;\n}",
+    "applications": ["File compression (ZIP, GZIP)", "Image compression (JPEG)", "Data transmission encoding"],
+    "key_points": ["Greedy approach using min-heap", "Frequent characters get shorter codes", "Produces prefix-free codes"],
+    "visual_description": "Show characters with frequencies. Animate building the Huffman tree by merging the two lowest-frequency nodes at each step. Display the binary code assigned to each character along the tree path."
+  },
+   {
+    "id": 61,
+    "name": "Warshall's Algorithm",
+    "category": "Graph Algorithms",
+    "difficulty": "Medium",
+    "definition": "Warshall's Algorithm computes the transitive closure of a directed graph. It determines whether a path exists between every pair of vertices using dynamic programming. The algorithm iterates over intermediate vertices and updates reachability using the rule: reach[i][j] = reach[i][j] OR (reach[i][k] AND reach[k][j]).",
+    "time_complexity": {
+      "best": "O(V³)",
+      "average": "O(V³)",
+      "worst": "O(V³)"
+    },
+    "space_complexity": "O(V²)",
+    "code_example": "#include <stdio.h>\n#define V 4\nvoid warshall(int reach[][V]) {\n    for (int k = 0; k < V; k++)\n        for (int i = 0; i < V; i++)\n            for (int j = 0; j < V; j++)\n                reach[i][j] = reach[i][j] || (reach[i][k] && reach[k][j]);\n}\nint main() {\n    int reach[V][V] = {\n        {1, 1, 0, 0},\n        {0, 1, 1, 0},\n        {0, 0, 1, 1},\n        {0, 0, 0, 1}\n    };\n    warshall(reach);\n    printf(\"Transitive Closure:\\n\");\n    for (int i = 0; i < V; i++) {\n        for (int j = 0; j < V; j++)\n            printf(\"%d \", reach[i][j]);\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+    "applications": ["Reachability analysis in networks", "Compiler data flow analysis", "Social network connectivity"],
+    "key_points": ["Uses boolean OR operations", "Three nested loops over vertices", "Result matrix shows all reachable pairs"],
+    "visual_description": "Show a directed graph adjacency matrix. For each intermediate vertex k, animate the update of matrix cells where a path through k is discovered, filling in reachability step by step."
+  },
+  {
+    "id": 62,
+    "name": "Floyd's Algorithm",
+    "category": "Graph Algorithms",
+    "difficulty": "Medium",
+    "definition": "Floyd-Warshall Algorithm finds the shortest paths between all pairs of vertices in a weighted graph. It iteratively considers each vertex as an intermediate node and relaxes distances. It handles negative edge weights but not negative cycles.",
+    "time_complexity": {
+      "best": "O(V³)",
+      "average": "O(V³)",
+      "worst": "O(V³)"
+    },
+    "space_complexity": "O(V²)",
+    "code_example": "#include <stdio.h>\n#define V 4\n#define INF 99999\nvoid floyd(int dist[][V]) {\n    for (int k = 0; k < V; k++)\n        for (int i = 0; i < V; i++)\n            for (int j = 0; j < V; j++)\n                if (dist[i][k] + dist[k][j] < dist[i][j])\n                    dist[i][j] = dist[i][k] + dist[k][j];\n}\nint main() {\n    int dist[V][V] = {\n        {0, 3, INF, 7},\n        {8, 0, 2, INF},\n        {5, INF, 0, 1},\n        {2, INF, INF, 0}\n    };\n    floyd(dist);\n    printf(\"Shortest distances:\\n\");\n    for (int i = 0; i < V; i++) {\n        for (int j = 0; j < V; j++)\n            if (dist[i][j] == INF) printf(\"INF \");\n            else printf(\"%d \", dist[i][j]);\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+    "applications": ["All-pairs shortest path in routing", "Network delay analysis", "Finding graph diameter"],
+    "key_points": ["Works for negative weights (no negative cycles)", "Three nested loops, one per intermediate vertex", "dist[i][j] updated if path through k is shorter"],
+    "visual_description": "Show a weighted graph distance matrix. For each intermediate vertex k, animate relaxation of shorter paths being discovered and the matrix values being updated with new minimums."
+  },
+   {
+    "id": 63,
+    "name": "Optimal Binary Search Trees (OBST)",
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "definition": "Optimal Binary Search Tree minimizes the expected search cost for a given set of keys with known search probabilities. Dynamic programming computes the cost of all possible subtrees bottom-up and selects the root that minimizes total weighted path length.",
+    "time_complexity": {
+      "best": "O(n³)",
+      "average": "O(n³)",
+      "worst": "O(n³)"
+    },
+    "space_complexity": "O(n²)",
+    "code_example": "#include <stdio.h>\n#define INF 99999\nfloat cost[10][10], w[10][10];\nint root[10][10];\nvoid obst(float p[], float q[], int n) {\n    int i, j, k, l, r;\n    for (i = 0; i <= n; i++) {\n        w[i][i] = q[i]; cost[i][i] = 0; root[i][i] = 0;\n    }\n    for (l = 1; l <= n; l++) {\n        for (i = 0; i <= n - l; i++) {\n            j = i + l;\n            w[i][j] = w[i][j-1] + p[j] + q[j];\n            cost[i][j] = INF;\n            for (k = i + 1; k <= j; k++) {\n                float c = cost[i][k-1] + cost[k][j] + w[i][j];\n                if (c < cost[i][j]) {\n                    cost[i][j] = c;\n                    root[i][j] = k;\n                }\n            }\n        }\n    }\n}\nint main() {\n    float p[] = {0, 0.15, 0.10, 0.05, 0.10, 0.20};\n    float q[] = {0.05, 0.10, 0.05, 0.05, 0.05, 0.10};\n    int n = 5;\n    obst(p, q, n);\n    printf(\"Optimal BST cost: %.2f\\n\", cost[0][n]);\n    printf(\"Root: %d\\n\", root[0][n]);\n    return 0;\n}",
+    "applications": ["Dictionary implementation", "Compiler symbol tables", "Frequency-based search optimization"],
+    "key_points": ["Uses search probabilities for keys and gaps", "DP table filled by increasing chain length", "Root selection minimizes total expected cost"],
+    "visual_description": "Show a table of keys with search probabilities. Animate filling the DP cost and root tables diagonal by diagonal, highlighting the optimal root selection for each subtree range."
+  },
+  {
+    "id": 64,
+    "name": "N-Queens Problem",
+    "category": "Backtracking",
+    "difficulty": "Hard",
+    "definition": "The N-Queens Problem places N queens on an N×N chessboard such that no two queens attack each other — no two share the same row, column, or diagonal. Backtracking tries placing a queen in each column of the current row and backtracks when a conflict is detected.",
+    "time_complexity": {
+      "best": "O(n!)",
+      "average": "O(n!)",
+      "worst": "O(n!)"
+    },
+    "space_complexity": "O(n)",
+    "code_example": "#include <stdio.h>\n#include <stdlib.h>\n#define N 8\nint board[N][N];\nint isSafe(int row, int col) {\n    int i, j;\n    for (i = 0; i < col; i++) if (board[row][i]) return 0;\n    for (i = row, j = col; i >= 0 && j >= 0; i--, j--) if (board[i][j]) return 0;\n    for (i = row, j = col; j >= 0 && i < N; i++, j--) if (board[i][j]) return 0;\n    return 1;\n}\nint solve(int col) {\n    if (col >= N) return 1;\n    for (int i = 0; i < N; i++) {\n        if (isSafe(i, col)) {\n            board[i][col] = 1;\n            if (solve(col + 1)) return 1;\n            board[i][col] = 0;\n        }\n    }\n    return 0;\n}\nint main() {\n    if (solve(0)) {\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) printf(\"%d \", board[i][j]);\n            printf(\"\\n\");\n        }\n    } else printf(\"No solution found\\n\");\n    return 0;\n}",
+    "applications": ["Constraint satisfaction problems", "AI search algorithms", "Parallel computing task allocation"],
+    "key_points": ["Check row, left diagonals before placing queen", "Backtrack when no safe position exists", "Multiple solutions exist for N >= 4"],
+    "visual_description": "Show an N×N chessboard. Animate placing a queen column by column, checking row and diagonals for safety. When a conflict is found, backtrack and highlight the removal before trying the next row."
+  },
+  {
+    "id": 65,
+    "name": "Hamiltonian Circuit",
+    "category": "Backtracking",
+    "difficulty": "Hard",
+    "definition": "A Hamiltonian Circuit is a path in a graph that visits every vertex exactly once and returns to the starting vertex. The backtracking algorithm tries adding vertices one by one and backtracks when a vertex either conflicts or the path cannot form a valid circuit.",
+    "time_complexity": {
+      "best": "O(n!)",
+      "average": "O(n!)",
+      "worst": "O(n!)"
+    },
+    "space_complexity": "O(n)",
+    "code_example": "#include <stdio.h>\n#define V 5\nint graph[V][V], path[V];\nint isSafe(int v, int pos) {\n    if (!graph[path[pos - 1]][v]) return 0;\n    for (int i = 0; i < pos; i++) if (path[i] == v) return 0;\n    return 1;\n}\nint solve(int pos) {\n    if (pos == V) return graph[path[pos - 1]][path[0]] ? 1 : 0;\n    for (int v = 1; v < V; v++) {\n        if (isSafe(v, pos)) {\n            path[pos] = v;\n            if (solve(pos + 1)) return 1;\n            path[pos] = -1;\n        }\n    }\n    return 0;\n}\nint main() {\n    int g[V][V] = {\n        {0,1,0,1,0},{1,0,1,1,1},{0,1,0,0,1},{1,1,0,0,1},{0,1,1,1,0}\n    };\n    for (int i = 0; i < V; i++) for (int j = 0; j < V; j++) graph[i][j] = g[i][j];\n    for (int i = 0; i < V; i++) path[i] = -1;\n    path[0] = 0;\n    if (solve(1)) {\n        printf(\"Hamiltonian Circuit: \");\n        for (int i = 0; i < V; i++) printf(\"%d \", path[i]);\n        printf(\"%d\\n\", path[0]);\n    } else printf(\"No Hamiltonian Circuit found\\n\");\n    return 0;\n}",
+    "applications": ["Traveling Salesman Problem base", "Circuit board routing", "DNA fragment assembly"],
+    "key_points": ["Must visit every vertex exactly once", "Last vertex must connect back to first", "NP-complete problem"],
+    "visual_description": "Show a graph with vertices. Animate the path building vertex by vertex. When a dead end is reached, highlight backtracking. When a complete circuit is found, highlight the full cycle in green."
+  },
+  {
+    "id": 66,
+    "name": "Assignment Problem (Branch and Bound)",
+    "category": "Branch and Bound",
+    "difficulty": "Hard",
+    "definition": "The Assignment Problem assigns n workers to n jobs to minimize total cost. The Branch and Bound approach explores partial assignments as a state space tree, using a lower bound (cost matrix reduction) to prune branches that cannot lead to a better solution than the current best.",
+    "time_complexity": {
+      "best": "O(n²)",
+      "average": "O(n! / pruned)",
+      "worst": "O(n!)"
+    },
+    "space_complexity": "O(n²)",
+    "code_example": "#include <stdio.h>\n#include <limits.h>\n#define N 4\nint costMatrix[N][N] = {{9,2,7,8},{6,4,3,7},{5,8,1,8},{7,6,9,4}};\nint assigned[N], minCost = INT_MAX;\nvoid solve(int worker, int cost) {\n    if (worker == N) {\n        if (cost < minCost) minCost = cost;\n        return;\n    }\n    for (int job = 0; job < N; job++) {\n        if (!assigned[job]) {\n            if (cost + costMatrix[worker][job] < minCost) {\n                assigned[job] = 1;\n                solve(worker + 1, cost + costMatrix[worker][job]);\n                assigned[job] = 0;\n            }\n        }\n    }\n}\nint main() {\n    for (int i = 0; i < N; i++) assigned[i] = 0;\n    solve(0, 0);\n    printf(\"Minimum assignment cost: %d\\n\", minCost);\n    return 0;\n}",
+    "applications": ["Job scheduling", "Resource allocation", "Workforce optimization"],
+    "key_points": ["State space tree represents partial assignments", "Lower bound used to prune suboptimal branches", "Optimal solution guaranteed"],
+    "visual_description": "Show a cost matrix of workers vs jobs. Animate the branch and bound tree, expanding nodes and pruning branches where the partial cost already exceeds the current best solution."
+  },
+   {
+    "id": 67,
+    "name": "Clique Problem",
+    "category": "NP-Complete Problems",
+    "difficulty": "Hard",
+    "definition": "A Clique in an undirected graph is a subset of vertices where every two vertices are connected by an edge. The Clique Problem asks for the largest such subset (Maximum Clique). It is NP-complete and typically solved using backtracking with pruning.",
+    "time_complexity": {
+      "best": "O(2^n)",
+      "average": "O(2^n)",
+      "worst": "O(2^n)"
+    },
+    "space_complexity": "O(n)",
+    "code_example": "#include <stdio.h>\n#define V 5\nint graph[V][V], maxClique = 0, clique[V], bestClique[V];\nint isConnected(int v, int curr[], int size) {\n    for (int i = 0; i < size; i++) if (!graph[v][curr[i]]) return 0;\n    return 1;\n}\nvoid findClique(int start, int curr[], int size) {\n    if (size > maxClique) {\n        maxClique = size;\n        for (int i = 0; i < size; i++) bestClique[i] = curr[i];\n    }\n    for (int v = start; v < V; v++) {\n        if (isConnected(v, curr, size)) {\n            curr[size] = v;\n            findClique(v + 1, curr, size + 1);\n        }\n    }\n}\nint main() {\n    int g[V][V] = {\n        {0,1,1,0,1},{1,0,1,1,1},{1,1,0,1,0},{0,1,1,0,1},{1,1,0,1,0}\n    };\n    for (int i = 0; i < V; i++) for (int j = 0; j < V; j++) graph[i][j] = g[i][j];\n    int curr[V];\n    findClique(0, curr, 0);\n    printf(\"Maximum Clique size: %d\\nVertices: \", maxClique);\n    for (int i = 0; i < maxClique; i++) printf(\"%d \", bestClique[i]);\n    printf(\"\\n\");\n    return 0;\n}",
+    "applications": ["Social network community detection", "Bioinformatics protein interaction", "Pattern recognition"],
+    "key_points": ["Every pair in clique must be adjacent", "NP-complete; exponential worst-case time", "Pruning reduces search in practice"],
+    "visual_description": "Show a graph with vertices. Animate exploring subsets of vertices, highlighting when all pairs are connected (forming a clique). Show the maximum clique found in green."
+  },
+  {
+    "id": 68,
+    "name": "Vertex Cover Problem",
+    "category": "NP-Complete Problems",
+    "difficulty": "Hard",
+    "definition": "A Vertex Cover of a graph is a set of vertices such that every edge has at least one endpoint in the set. The Minimum Vertex Cover Problem finds the smallest such set. It is NP-complete, but a 2-approximation can be achieved greedily by selecting both endpoints of uncovered edges.",
+    "time_complexity": {
+      "best": "O(V + E)",
+      "average": "O(V + E)",
+      "worst": "O(2^V)"
+    },
+    "space_complexity": "O(V)",
+    "code_example": "#include <stdio.h>\n#define V 6\n#define E 7\nint cover[V];\nvoid vertexCover(int edges[][2], int e) {\n    for (int i = 0; i < e; i++) {\n        int u = edges[i][0], v = edges[i][1];\n        if (!cover[u] && !cover[v]) {\n            cover[u] = 1;\n            cover[v] = 1;\n        }\n    }\n}\nint main() {\n    int edges[E][2] = {{0,1},{0,2},{1,3},{1,4},{2,4},{3,5},{4,5}};\n    vertexCover(edges, E);\n    printf(\"Vertex Cover: \");\n    for (int i = 0; i < V; i++) if (cover[i]) printf(\"%d \", i);\n    printf(\"\\n\");\n    return 0;\n}",
+    "applications": ["Network security (monitoring edges)", "Circuit board layout", "Bioinformatics"],
+    "key_points": ["Every edge must be covered by at least one vertex", "Greedy 2-approximation picks both endpoints", "Exact solution is NP-complete"],
+    "visual_description": "Show a graph. Animate scanning each edge, selecting both endpoints if neither is in the cover yet, and highlighting them. Finally show all covered edges and the selected vertex cover set."
+  },
+  {
+    "id": 69,
+    "name": "Set Cover Problem",
+    "category": "NP-Complete Problems",
+    "difficulty": "Hard",
+    "definition": "The Set Cover Problem finds the minimum number of sets from a collection that together cover all elements of the universe. It is NP-complete. The greedy approximation repeatedly picks the set covering the most uncovered elements, achieving an O(log n) approximation ratio.",
+    "time_complexity": {
+      "best": "O(n)",
+      "average": "O(n² log n)",
+      "worst": "O(2^n)"
+    },
+    "space_complexity": "O(n + m)",
+    "code_example": "#include <stdio.h>\n#define U 7\n#define S 4\nint sets[S][U] = {\n    {1,1,0,0,0,1,0},\n    {0,1,1,1,0,0,0},\n    {0,0,0,1,1,0,1},\n    {1,0,0,0,0,1,1}\n};\nint covered[U];\nvoid setCover() {\n    int totalCovered = 0;\n    while (totalCovered < U) {\n        int best = -1, bestCount = 0;\n        for (int i = 0; i < S; i++) {\n            int count = 0;\n            for (int j = 0; j < U; j++) if (sets[i][j] && !covered[j]) count++;\n            if (count > bestCount) { bestCount = count; best = i; }\n        }\n        if (best == -1) break;\n        printf(\"Selected Set %d\\n\", best);\n        for (int j = 0; j < U; j++) if (sets[best][j] && !covered[j]) { covered[j] = 1; totalCovered++; }\n    }\n}\nint main() {\n    setCover();\n    return 0;\n}",
+    "applications": ["Network coverage planning", "Facility location problems", "Test suite minimization"],
+    "key_points": ["Universe must be fully covered", "Greedy picks the set with most uncovered elements", "Approximation ratio is O(log n)"],
+    "visual_description": "Show the universe of elements and collection of sets. Animate the greedy selection: highlight the set covering the most new elements, mark those elements as covered, and repeat until all elements are covered."
+  },
+  {
+    "id": 70,
+    "name": "Approximation Algorithms (Vertex Cover and TSP)",
+    "category": "Approximation Algorithms",
+    "difficulty": "Hard",
+    "definition": "Approximation algorithms find near-optimal solutions to NP-hard problems in polynomial time. The 2-approximation for Vertex Cover selects both endpoints of each unmatched edge. The TSP approximation uses a Minimum Spanning Tree and DFS preorder walk, guaranteeing a solution within twice the optimal cost when the triangle inequality holds.",
+    "time_complexity": {
+      "best": "O(V + E)",
+      "average": "O(V² log V)",
+      "worst": "O(V²)"
+    },
+    "space_complexity": "O(V + E)",
+    "code_example": "#include <stdio.h>\n#include <stdlib.h>\n#define V 5\n#define INF 99999\nint dist[V][V] = {\n    {0,10,8,9,7},{10,0,10,5,6},{8,10,0,8,9},{9,5,8,0,6},{7,6,9,6,0}\n};\nint visited[V], parent[V];\nint minKey(int key[], int mstSet[]) {\n    int min = INF, minIdx = -1;\n    for (int v = 0; v < V; v++)\n        if (!mstSet[v] && key[v] < min) { min = key[v]; minIdx = v; }\n    return minIdx;\n}\nvoid primMST(int mst[][V]) {\n    int key[V], mstSet[V];\n    for (int i = 0; i < V; i++) { key[i] = INF; mstSet[i] = 0; parent[i] = -1; }\n    key[0] = 0;\n    for (int count = 0; count < V - 1; count++) {\n        int u = minKey(key, mstSet);\n        mstSet[u] = 1;\n        for (int v = 0; v < V; v++)\n            if (dist[u][v] && !mstSet[v] && dist[u][v] < key[v]) { parent[v] = u; key[v] = dist[u][v]; }\n    }\n    for (int i = 1; i < V; i++) { mst[parent[i]][i] = 1; mst[i][parent[i]] = 1; }\n}\nvoid dfsPreorder(int mst[][V], int u, int tour[], int* count) {\n    visited[u] = 1;\n    tour[(*count)++] = u;\n    for (int v = 0; v < V; v++) if (mst[u][v] && !visited[v]) dfsPreorder(mst, v, tour, count);\n}\nint main() {\n    int mst[V][V] = {0};\n    primMST(mst);\n    int tour[V + 1], count = 0;\n    dfsPreorder(mst, 0, tour, &count);\n    tour[count] = tour[0];\n    int totalCost = 0;\n    printf(\"TSP Tour: \");\n    for (int i = 0; i < count; i++) {\n        printf(\"%d -> \", tour[i]);\n        totalCost += dist[tour[i]][tour[i + 1]];\n    }\n    printf(\"%d\\nTotal Cost: %d\\n\", tour[count], totalCost);\n    return 0;\n}",
+    "applications": ["Logistics and route planning", "Network design", "Resource allocation under constraints"],
+    "key_points": ["2-approximation guarantees solution within 2x optimal", "TSP approximation requires triangle inequality", "Polynomial time with bounded error ratio"],
+    "visual_description": "Show two panels: left panel demonstrates Vertex Cover 2-approximation by selecting edge endpoints; right panel shows MST-based TSP approximation with DFS preorder walk forming the tour, compared to the optimal tour."
   }
+
+
+
+
+
+
+  
+
+
+
+
 ]
