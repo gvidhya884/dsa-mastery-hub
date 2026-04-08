@@ -6,11 +6,11 @@ import QuizWidget from './components/Quiz/QuizWidget';
 import ProgressDashboard from './components/Progress/ProgressDashboard';
 import BookmarksList from './components/Bookmarks/BookmarksList';
 import ProfilePage from './components/Profile/ProfilePage';
-import AlgorithmsLibrary from './components/Library/AlgorithmsLibrary';
-import StatsSummary from './components/Library/StatsSummary';
 import AVLTree from './utils/avlTree';
 import { fuzzySearch, initSearchEngine } from './utils/searchEngine';
 import { storage } from './utils/storage';
+import AlgorithmsLibrary from './components/Library/AlgorithmsLibrary';
+import StatsSummary from './components/Library/StatsSummary';
 
 // Dynamic import for dataset to enable hot reload
 let dataset = [];

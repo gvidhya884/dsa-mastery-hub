@@ -204,5 +204,7 @@ const AlgorithmsLibrary = ({ allConcepts, onSelectConcept }) => {
     </div>
   );
 };
-
+const StatsSummary = () => {
+  return <div>Stats</div>;
+};
 export default AlgorithmsLibrary;
