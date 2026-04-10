@@ -35,5 +35,4 @@ const StatsSummary = ({ allConcepts }) => {
     </div>
   );
 };
-
 export default StatsSummary;

@@ -204,5 +204,4 @@ const AlgorithmsLibrary = ({ allConcepts, onSelectConcept }) => {
     </div>
   );
 };
-
 export default AlgorithmsLibrary;
