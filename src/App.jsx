@@ -4,13 +4,14 @@ import SearchBar from './components/Search/SearchBar';
 import ConceptPage from './components/Concept/ConceptPage';
 import QuizWidget from './components/Quiz/QuizWidget';
 import ProgressDashboard from './components/Progress/ProgressDashboard';
+import AddCustomConcept from './components/CustomConcept/AddCustomConcept';
 import BookmarksList from './components/Bookmarks/BookmarksList';
 import ProfilePage from './components/Profile/ProfilePage';
+import AlgorithmsLibrary from './components/Library/AlgorithmsLibrary';
+import StatsSummary from './components/Library/StatsSummary';
 import AVLTree from './utils/avlTree';
 import { fuzzySearch, initSearchEngine } from './utils/searchEngine';
 import { storage } from './utils/storage';
-import AlgorithmsLibrary from './components/Library/AlgorithmsLibrary';
-import StatsSummary from './components/Library/StatsSummary';
 
 // Dynamic import for dataset to enable hot reload
 let dataset = [];
@@ -59,7 +60,7 @@ function App() {
       console.log(`📚 Inserted ${freshDataset.length} base concepts`);
     }
     
-    // Insert custom concepts from localStorage (if any)
+    // Insert custom concepts from localStorage
     const customConcepts = storage.getCustomConcepts();
     if (customConcepts.length > 0) {
       customConcepts.forEach(concept => {
@@ -178,6 +179,29 @@ function App() {
     setRecentConcepts(storage.getRecentConcepts());
   };
 
+  const handleAddCustomConcept = async (newConcept) => {
+    if (avlTree) {
+      // Save to localStorage
+      const savedConcept = storage.addCustomConcept(newConcept);
+      
+      // Rebuild the AVL tree with the new concept
+      const all = await rebuildAVLTree();
+      
+      // Update all concepts state
+      setAllConcepts(all);
+      
+      // Force a refresh of the search engine
+      initSearchEngine(all);
+      
+      // Show success message
+      alert(`✅ "${savedConcept.name}" added successfully!\n\nYou can now search for it.`);
+      
+      // Optional: Navigate to the new concept
+      setCurrentConcept(savedConcept);
+      setActiveTab('home');
+    }
+  };
+
   // Manual reload function for dataset
   const handleReloadDataset = async () => {
     setIsLoading(true);
@@ -274,7 +298,7 @@ function App() {
           </div>
         )}
 
-        {/* Tab Navigation - ADD CONCEPT TAB REMOVED (Now only 6 tabs) */}
+        {/* Tab Navigation - ALL 7 TABS */}
         <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => { setActiveTab('home'); setCurrentConcept(null); }}
@@ -336,9 +360,19 @@ function App() {
           >
             👤 Profile
           </button>
+          <button
+            onClick={() => setActiveTab('add')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'add'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600'
+            }`}
+          >
+            ➕ Add Concept
+          </button>
         </div>
 
-        {/* Content Sections - ADD CONCEPT SECTION REMOVED */}
+        {/* Content Sections */}
         {activeTab === 'home' && renderHomeContent()}
 
         {activeTab === 'library' && (
@@ -371,6 +405,10 @@ function App() {
         )}
 
         {activeTab === 'profile' && <ProfilePage />}
+        
+        {activeTab === 'add' && (
+          <AddCustomConcept onAdd={handleAddCustomConcept} />
+        )}
       </main>
 
       {/* Development: Manual Reload Button */}
