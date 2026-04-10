@@ -7,8 +7,8 @@ import ProgressDashboard from './components/Progress/ProgressDashboard';
 import AddCustomConcept from './components/CustomConcept/AddCustomConcept';
 import BookmarksList from './components/Bookmarks/BookmarksList';
 import ProfilePage from './components/Profile/ProfilePage';
-import AlgorithmsLibrary from './components/Library/AlgorithmsLibrary';
-import StatsSummary from './components/Library/StatsSummary';
+import AlgorithmsLibrary from './components/library/AlgorithmsLibrary';
+import StatsSummary from './components/library/StatsSummary';
 import AVLTree from './utils/avlTree';
 import { fuzzySearch, initSearchEngine } from './utils/searchEngine';
 import { storage } from './utils/storage';
@@ -20,7 +20,7 @@ let dataset = [];
 const loadDataset = async () => {
   try {
     // Add timestamp to prevent caching
-    const response = await fetch(`/src/data/dsa_dataset.json?t=${Date.now()}`);
+    const response = await fetch(`src/data/dsa_dataset.json?t=${Date.now()}`);
     if (response.ok) {
       const data = await response.json();
       dataset = data;
